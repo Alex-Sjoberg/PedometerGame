@@ -1,137 +1,149 @@
 package com.example.pedometer2;
 
 
+import java.util.Date;
+
 import android.app.Activity;
-import android.app.ActionBar;
-import android.app.Fragment;
-import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
-import android.os.Build;
 
-public class MainActivity extends Activity implements SensorEventListener{
+public class MainActivity extends Activity
+implements SensorEventListener{
+ 
+SensorManager sensorManager;
+private Sensor sensorAccelerometer;
+private Sensor sensorGyroscope;
+ 
+private float[] valuesAccelerometer;
+private float[] valuesGyroscope;
+double player_heading = 0;
 
-	private SensorManager sensorManager;
-	int x_pos = 5;
-	int y_pos = 5;
+long last_sensor_time;
+ 
+
+private float[] gravity;
+private float[] linear_acceleration;
+
+TextView gyro_x, gyro_y, gyro_z, azimuth, heading;
+ 
+/** Called when the activity is first created. */
+@Override
+public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+    this.gyro_x = (TextView)findViewById(R.id.gyro_x);
+    this.gyro_x = (TextView)findViewById(R.id.gyro_y);
+    this.gyro_x = (TextView)findViewById(R.id.gyro_z);
+    this.azimuth = (TextView)findViewById(R.id.azimuth);
+    this.heading = (TextView)findViewById(R.id.heading);
+
+    gravity = new float[3];
+    linear_acceleration = new float[3];
+
+    //readingPitch = (TextView)findViewById(R.id.pitch);
+    //readingRoll = (TextView)findViewById(R.id.roll);
+    
+    
+    sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+    sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+    sensorGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+    if (sensorGyroscope == null){
+        Toast.makeText(this, "Aint got no gyroscope", Toast.LENGTH_LONG).show();
+
+    }else{
+        Toast.makeText(this, "You got gyroscope!", Toast.LENGTH_LONG).show();
+    }
+    
+ valuesAccelerometer = new float[3];
+ valuesGyroscope = new float[3];
+
+}
+
+@Override
+protected void onResume() {
+
+sensorManager.registerListener(this,
+  sensorAccelerometer,
+  SensorManager.SENSOR_DELAY_UI);
+sensorManager.registerListener(this,
+  sensorGyroscope,
+  SensorManager.SENSOR_DELAY_UI);
+
+last_sensor_time = System.currentTimeMillis();
+
+super.onResume();
+}
+
+@Override
+protected void onPause() {
+
+sensorManager.unregisterListener(this,
+  sensorAccelerometer);
+sensorManager.unregisterListener(this,
+  sensorGyroscope);
+super.onPause();
+}
+
+@Override
+public void onAccuracyChanged(Sensor arg0, int arg1) {
+// TODO Auto-generated method stub
+  
+}
+
+@Override
+public void onSensorChanged(SensorEvent event) {
+// TODO Auto-generated method stub
+  
+switch(event.sensor.getType()){
+case Sensor.TYPE_ACCELEROMETER:
+
 	
-	int[][] game_world = new int[10][10];
-	Sensor stepSensor;
-	Sensor magnetometer;
-	Sensor accelerometer;
-	
-	float azimut;
-	float[] mGravity;
-	float[] mGeomagnetic;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+ final float alpha = (float) 0.8;
 
-		if (savedInstanceState == null) {
-			getFragmentManager().beginTransaction()
-					.add(R.id.container, new PlaceholderFragment()).commit();
-		}
-		
-		//Creating sensors and checking for support
-		sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-		
-		stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
-		magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-	    accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-	      
-	      if (stepSensor == null){
-            Toast.makeText(this, "Step sensor aint supported bro!", Toast.LENGTH_LONG).show();		
-		}else{
-            Toast.makeText(this, "Step sensor ais totally supported bro!", Toast.LENGTH_LONG).show();		
-		}
-		if (magnetometer == null || accelerometer == null){
-            Toast.makeText(this, "Compass aint supported bro!", Toast.LENGTH_LONG).show();		
-		}else{
-            Toast.makeText(this, "Compass is totally supported bro! Alright!", Toast.LENGTH_LONG).show();		
-		}
-		
-		//Register us as the event handler for the compass
-		sensorManager.registerListener(this, magnetometer,SensorManager.SENSOR_DELAY_UI);
-		sensorManager.registerListener(this, accelerometer,SensorManager.SENSOR_DELAY_UI);
+ gravity[0] = alpha * gravity[0] + (1 - alpha) * event.values[0];
+ gravity[1] = alpha * gravity[1] + (1 - alpha) * event.values[1];
+ gravity[2] = alpha * gravity[2] + (1 - alpha) * event.values[2];
 
-	}
+ linear_acceleration[0] = event.values[0] - gravity[0];
+ linear_acceleration[1] = event.values[1] - gravity[1];
+ linear_acceleration[2] = event.values[2] - gravity[2];
 
-	@Override
-	public void onSensorChanged(SensorEvent event) {
-		
-		    if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
-		      mGravity = event.values;
-		    if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
-		      mGeomagnetic = event.values;
-		   
-		    if (mGravity != null && mGeomagnetic != null) {
-		      float R[] = new float[9];
-		      float I[] = new float[9];
-		      boolean success = SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic);
-		      if (success) {
-		        float orientation[] = new float[3];
-		        SensorManager.getOrientation(R, orientation);
-		        azimut = orientation[0]; // orientation contains: azimut, pitch and roll
-	            Toast.makeText(this, Float.toString(azimut), Toast.LENGTH_LONG).show();		
-		      }
-		    }		
-	}
+ this.azimuth.setText("Azimuth:" + String.valueOf(linear_acceleration[0]));
 
-	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
-	
-	
-
-	/**
-	 * A placeholder fragment containing a simple view.
-	 */
-	public static class PlaceholderFragment extends Fragment {
-
-		public PlaceholderFragment() {
-		}
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_main, container,
-					false);
-			return rootView;
-		}
-	}
+ break;
+case Sensor.TYPE_GYROSCOPE:
+ //get time interval between readings
+ long now = System.currentTimeMillis();
+ float time_since_update_milli = now - last_sensor_time;
 
 
+
+ 
+ for(int i =0; i < 3; i++){
+  valuesGyroscope[i] = event.values[i];
+ }
+ 
+ double deg_rot = (double) (valuesGyroscope[2] * (180/Math.PI));
+ deg_rot /= 1000;
+ if(time_since_update_milli != 0){
+	 player_heading += (deg_rot * time_since_update_milli);
+	 player_heading %= 360;
+ }else{
+	 player_heading = -800;
+ }
+ 
+ this.gyro_x.setText("Gyroscope X:" + String.valueOf(deg_rot));
+ this.heading.setText("Player Heading:" + String.valueOf(player_heading));
+ last_sensor_time = System.currentTimeMillis();
+
+
+ break;
+}
+}
+  
 }
