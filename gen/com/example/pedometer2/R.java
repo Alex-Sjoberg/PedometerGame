@@ -26,12 +26,20 @@ public final class R {
         public static final int img_compass=0x7f020001;
     }
     public static final class id {
-        public static final int action_settings=0x7f080005;
-        public static final int azimuth=0x7f080003;
-        public static final int gyro_x=0x7f080000;
-        public static final int gyro_y=0x7f080001;
-        public static final int gyro_z=0x7f080002;
-        public static final int heading=0x7f080004;
+        public static final int action_settings=0x7f08000d;
+        public static final int azimuth=0x7f080001;
+        public static final int compass_heading=0x7f080003;
+        public static final int goal_x=0x7f080007;
+        public static final int goal_y=0x7f080008;
+        public static final int gyro_z=0x7f080000;
+        public static final int heading=0x7f080002;
+        public static final int move_button=0x7f08000a;
+        public static final int pause_button=0x7f08000b;
+        public static final int player_x=0x7f080005;
+        public static final int player_y=0x7f080006;
+        public static final int resume_button=0x7f08000c;
+        public static final int score=0x7f080009;
+        public static final int step_count=0x7f080004;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
