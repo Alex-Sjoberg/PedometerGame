@@ -5,7 +5,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="461dp"
+        android:layout_height="830dp"
         android:orientation="vertical" >
         
         <TextView
@@ -20,55 +20,81 @@
             android:layout_height="wrap_content"
             android:text="Azimuth:"
             android:textAppearance="?android:attr/textAppearanceLarge" />
-        <TextView
-            android:id="@+id/heading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Heading:"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
 
-        <TextView
-            android:id="@+id/compass_heading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Compass heading: No data"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            
+            android:layout_height="wrap_content" >
 
-        <TextView
-            android:id="@+id/step_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Step count: " />
+            <TextView
+                android:id="@+id/heading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Heading:"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
 
-        <TextView
-            android:id="@+id/player_x"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Player x: " />
+            <TextView
+                android:id="@+id/compass_heading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Compass heading: No data"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
 
-        <TextView
-            android:id="@+id/player_y"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Player y: " />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/goal_x"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Go to x: " />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
 
-        <TextView
-            android:id="@+id/goal_y"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Go to y: " />
+            <TextView
+                android:id="@+id/step_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Step count: " />
 
-        <TextView
-            android:id="@+id/score"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Score: 0" />
+            <TextView
+                android:id="@+id/score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Score: 0" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/player_x"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Player x: " />
+
+            <TextView
+                android:id="@+id/player_y"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Player y: " />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/goal_x"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Go to x: " />
+
+            <TextView
+                android:id="@+id/goal_y"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Go to y: " />
+
+        </LinearLayout>
 
         <Button
             android:id="@+id/move_button"
@@ -76,17 +102,58 @@
             android:layout_height="wrap_content"
             android:text="Move Forward" />
 
-        <Button
-            android:id="@+id/pause_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pause Sensors" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
 
-        <Button
-            android:id="@+id/resume_button"
+            <Button
+                android:id="@+id/pause_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pause Sensors" />
+            <Button android:id="@+id/resume_button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Resume Sensors"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rotating_layout"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Resume Sensors" />
+      		android:layout_gravity="center_horizontal"
+            android:layout_height="wrap_content" >
+
+        </LinearLayout>
+
+        <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" 
+            android:id="@+id/rotating_table">
+            
+            <TableRow
+                android:id="@+id/tableRow1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/tableRow2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/tableRow3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/tableRow4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+            </TableRow>
+        </TableLayout>
 
      </LinearLayout>
 

@@ -10,8 +10,15 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,8 +47,8 @@ implements SensorEventListener{
 	
 	int accel_step_count = 0;
 	
-	int player_x = 0;
-	int player_y = 0;
+	int player_x = 5;
+	int player_y = 5;
 	double player_heading = 0;
 	
 	int goal_x;
@@ -62,6 +69,10 @@ implements SensorEventListener{
 	private TextView goal_y_view;
 	private TextView score_view;
 	private TextView compass_heading_view;
+	
+    private ImageView rotating_image;
+    private LinearLayout rotating_layout;
+    private TableLayout rotating_table;
 
 
 	private Button move_button;
@@ -73,6 +84,9 @@ implements SensorEventListener{
 	    {-1,0},{0,0},{1,0},
 	    {-1,-1},{0,-1},{1,-1}
 	};
+	
+	private static int GRID_HEIGHT = 6;
+	private static int GRID_WIDTH = 6;
 	
 	TextView gyro_x, gyro_y, gyro_z, azimuth, heading;
 	 
@@ -90,6 +104,9 @@ implements SensorEventListener{
 		player_x_view = (TextView) findViewById(R.id.player_x);
 		player_y_view = (TextView) findViewById(R.id.player_y);
 		
+        rotating_layout = (LinearLayout) findViewById(R.id.rotating_layout);
+        rotating_table = (TableLayout) findViewById(R.id.rotating_table);
+        
 		goal_x_view = (TextView) findViewById(R.id.goal_x);
 		goal_y_view = (TextView) findViewById(R.id.goal_y);
 		score_view = (TextView) findViewById(R.id.score);
@@ -97,6 +114,24 @@ implements SensorEventListener{
 		move_button = (Button) findViewById(R.id.move_button);
 		pause_button = (Button) findViewById(R.id.pause_button);
 		resume_button = (Button) findViewById(R.id.resume_button);
+		
+		for (int row = 0; row < GRID_HEIGHT; row++){
+			TableRow line = new TableRow(this);
+			line.setId(row);
+			
+			for (int col = 0; col < GRID_WIDTH; col++){
+				ImageView new_view = new ImageView(this);
+				new_view.setTag("table[" + Integer.toString(row) + "][" + Integer.toString(col) + "]");
+				if (player_y == row && player_x == col){
+					new_view.setImageResource(R.drawable.character);
+				}else{
+					new_view.setImageResource(R.drawable.tile);
+				}
+				line.addView(new_view);
+			}
+			rotating_table.addView(line);
+		}
+		
 		
 	    gravity = new float[3];
 	    linear_acceleration = new float[3];
@@ -234,15 +269,38 @@ implements SensorEventListener{
 	protected void move_player(double heading){
 		int[] translation = get_translation_from_heading(heading);
 		
-		player_x += translation[0];
-		player_y += translation[1];
-		player_x_view.setText("Player x: " + player_x);
-		player_y_view.setText("Player y: " + player_y);
-		if (player_x == goal_x && player_y == goal_y){
-			score += 100;
-			score_view.setText("Score: " + score);
-			generate_goal();
+		int new_x = player_x - translation[0];
+		int new_y = player_y - translation[1];
+		
+		if (in_bounds(new_x,new_y)){
+			Log.d("DEBUGTAG" , "table["+ Integer.toString(player_x) + "][" + Integer.toString(player_y) + "]");
+			ImageView to_tile = (ImageView) rotating_table.findViewWithTag("table["+ Integer.toString(new_x) + "][" + Integer.toString(new_y) + "]");
+			ImageView from_tile = (ImageView) rotating_table.findViewWithTag("table["+ Integer.toString(player_x) + "][" + Integer.toString(player_y) + "]");
+			
+			to_tile.setImageResource(R.drawable.character);
+			from_tile.setImageResource(R.drawable.tile);
+			
+			player_x = new_x;
+			player_y = new_y;
+			player_x_view.setText("Player x: " + player_x);
+			player_y_view.setText("Player y: " + player_y);
+
+			if (player_x == goal_x && player_y == goal_y){
+				score += 100;
+				score_view.setText("Score: " + score);
+				generate_goal();
+			}
 		}
+
+
+	}
+	protected Boolean in_bounds(int x,int y){
+		Log.d("!!!!!!!!!!!" , "Checking bounds yo!");
+		if ((x < 0 || x >= GRID_WIDTH) || (y < 0 || y >= GRID_HEIGHT)){
+			Log.d("!!!!!!!!!!!" , "Out of bounds yo!");
+			return false;
+		}
+		return true;
 	}
 	protected void generate_goal(){
 	    goal_y = rand.nextInt((100 - -100) + 1) + -100;
@@ -323,6 +381,7 @@ implements SensorEventListener{
 	protected void process_gyroscope_data(SensorEvent event){
 		 //get time interval between readings
 		 long now = System.currentTimeMillis();
+		 double prev_heading = this.player_heading;
 		 float time_since_update_milli = now - last_sensor_time;
 		 
 		 for(int i =0; i < 3; i++){
@@ -340,6 +399,30 @@ implements SensorEventListener{
 		 }else{
 			 player_heading = -9000;
 		 }
+		 
+		 //came from compass example
+         // create a rotation animation (reverse turn degree degrees)
+         RotateAnimation ra = new RotateAnimation(
+                 (float)prev_heading, 
+                 (float)player_heading,
+                 Animation.RELATIVE_TO_SELF, 0.5f, 
+                 Animation.RELATIVE_TO_SELF,
+                 0.5f);
+
+         // how long the animation will take place
+         ra.setDuration(210);
+
+         // set the animation after the end of the reservation status
+         ra.setFillAfter(true);
+
+         // Start the animation
+         int width = rotating_layout.getWidth();
+         int height = rotating_layout.getHeight();
+         
+         //rotating_layout.setPivotY(5000000);
+        // rotating_layout.setPivotX(width/2);
+         
+         rotating_table.startAnimation(ra);
 		 
 		 this.gyro_x.setText("Gyroscope X:" + String.valueOf(deg_rot));
 		 this.heading.setText("Player Heading:" + String.valueOf(player_heading));
